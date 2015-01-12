@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1072.robot.commands;
 
+import org.usfirst.frc.team1072.robot.OI;
 import org.usfirst.frc.team1072.robot.subsystems.Drivetrain;
 
 import edu.wpi.first.wpilibj.command.Command;
@@ -7,10 +8,11 @@ import edu.wpi.first.wpilibj.command.Command;
 /**
  *
  */
-public class DriveForwardCommand extends Command {
-	
-    public DriveForwardCommand() {
-       
+public class ManualDriveCommand extends Command {
+
+    public ManualDriveCommand() {
+        // Use requires() here to declare subsystem dependencies
+        // eg. requires(chassis);
     }
 
     // Called just before this Command runs the first time
@@ -19,12 +21,12 @@ public class DriveForwardCommand extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	Drivetrain.getInstance().drive(.25);
+    	Drivetrain.getInstance().drive(OI.gamepad.getLeftY(), OI.gamepad.getRightY());
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return true;
+        return false;
     }
 
     // Called once after isFinished returns true

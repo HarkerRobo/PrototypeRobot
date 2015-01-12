@@ -1,8 +1,10 @@
 package org.usfirst.frc.team1072.robot;
 
+import org.usfirst.frc.team1072.harkerrobolib.wrappers.GamepadWrapper;
 import org.usfirst.frc.team1072.robot.commands.DriveForwardCommand;
 import org.usfirst.frc.team1072.robot.commands.DriveReverseCommand;
 import org.usfirst.frc.team1072.robot.commands.DriveTalonCommand;
+import org.usfirst.frc.team1072.robot.commands.ManualDriveCommand;
 import org.usfirst.frc.team1072.robot.commands.StopCommand;
 import org.usfirst.frc.team1072.robot.commands.TurnCommand;
 
@@ -44,29 +46,13 @@ public class OI {
     // until it is finished as determined by it's isFinished method.
     // button.whenReleased(new ExampleCommand());
 	
-	Joystick gamepad;
-	JoystickButton button1;
-	JoystickButton button2;
-	JoystickButton button3;
-	JoystickButton button4;
-	JoystickButton button5;
-	JoystickButton button6;
+	public static GamepadWrapper gamepad;
+	public ManualDriveCommand manualDrive;
 	
 	private OI() {
-		System.out.println("Started");
-		gamepad = new Joystick(0);
-		button1 = new JoystickButton(gamepad, 1);
-		button2 = new JoystickButton(gamepad, 2);
-		button3 = new JoystickButton(gamepad, 3);
-		button4 = new JoystickButton(gamepad, 4);
-		button5 = new JoystickButton(gamepad, 5);
-		button6 = new JoystickButton(gamepad, 6);
-		button1.whenPressed(new TurnCommand(TurnCommand.LEFT));
-		button2.whenPressed(new DriveReverseCommand());
-		button3.whenPressed(new TurnCommand(TurnCommand.RIGHT));
-//		button4.whenPressed(new DriveTalonCommand(3));
-		button5.whenPressed(new DriveForwardCommand());
-		button6.whenPressed(new StopCommand());
+		gamepad = new GamepadWrapper(0);
+		manualDrive = new ManualDriveCommand();
+		manualDrive.start();
 	}
 	
 	public static void initialize() {

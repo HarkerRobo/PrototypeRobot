@@ -28,7 +28,6 @@ public class Robot extends IterativeRobot {
      * used for any initialization code.
      */
     public void robotInit() {
-		OI.initialize();
 		server = CameraServer.getInstance();
         server.setQuality(100);
         server.startAutomaticCapture("cam0");
@@ -56,6 +55,7 @@ public class Robot extends IterativeRobot {
         // teleop starts running. If you want the autonomous to 
         // continue until interrupted by another command, remove
         // this line or comment it out.
+    	OI.initialize();
         if (autonomousCommand != null) autonomousCommand.cancel();
     }
 

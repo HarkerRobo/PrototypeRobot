@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1072.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -12,6 +13,7 @@ public class Drivetrain extends Subsystem {
 	private RobotDrive robotDrive;
 	private static Drivetrain drivetrain;
 	private Talon leftFront, leftBack, rightFront, rightBack;
+	private DigitalInput in;
 	
 	private Drivetrain() {
 		leftFront = new Talon(0);
@@ -40,6 +42,13 @@ public class Drivetrain extends Subsystem {
     	rightBack.set(speed);
     }
     
+    public void drive(double left, double right) {
+    	leftFront.set(-left);
+    	leftBack.set(-left);
+    	rightFront.set(right);
+    	rightBack.set(right);
+    }
+    
     public void turn(int direction) {
     	leftFront.set(-direction);
     	leftBack.set(-direction);
@@ -61,6 +70,20 @@ public class Drivetrain extends Subsystem {
     		case 3:
     			rightBack.set(speed);
     	}
+    }
+    
+    public void pollAllInputs() {
+    	for (int i = 0; i < 10; i++) {
+    		try {
+    			pollInput(i);
+    		} catch (Exception ex) {
+    			System.err.println("Error with input " + i);
+    		}
+    	}
+    }
+    
+    public void pollInput(int inputPort) throws Exception {
+    	System.out.println(new DigitalInput(inputPort).get());
     }
 }
 
