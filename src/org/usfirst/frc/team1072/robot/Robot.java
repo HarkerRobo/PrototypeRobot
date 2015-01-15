@@ -28,9 +28,9 @@ public class Robot extends IterativeRobot {
      * used for any initialization code.
      */
     public void robotInit() {
-		server = CameraServer.getInstance();
-        server.setQuality(100);
-        server.startAutomaticCapture("cam0");
+//		server = CameraServer.getInstance();
+//        server.setQuality(100);
+//        server.startAutomaticCapture("cam0");
         // instantiate the command used for the autonomous period
     }
 	

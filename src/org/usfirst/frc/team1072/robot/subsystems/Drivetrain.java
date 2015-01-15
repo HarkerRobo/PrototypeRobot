@@ -13,13 +13,15 @@ public class Drivetrain extends Subsystem {
 	private RobotDrive robotDrive;
 	private static Drivetrain drivetrain;
 	private Talon leftFront, leftBack, rightFront, rightBack;
-	private DigitalInput in;
+	private DigitalInput[] inputArray = new DigitalInput[10];
 	
 	private Drivetrain() {
 		leftFront = new Talon(0);
 		leftBack = new Talon(1);
 		rightFront = new Talon(2);
 		rightBack = new Talon(3);
+		for (int i = 0; i < inputArray.length; i++)
+			inputArray[i] = new DigitalInput(i);
 	}
 	
 	public static Drivetrain getInstance() {
@@ -83,7 +85,7 @@ public class Drivetrain extends Subsystem {
     }
     
     public void pollInput(int inputPort) throws Exception {
-    	System.out.println(new DigitalInput(inputPort).get());
+    	System.out.println(inputArray[inputPort].get());
     }
 }
 

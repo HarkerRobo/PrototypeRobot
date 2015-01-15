@@ -5,6 +5,7 @@ import org.usfirst.frc.team1072.robot.commands.DriveForwardCommand;
 import org.usfirst.frc.team1072.robot.commands.DriveReverseCommand;
 import org.usfirst.frc.team1072.robot.commands.DriveTalonCommand;
 import org.usfirst.frc.team1072.robot.commands.ManualDriveCommand;
+import org.usfirst.frc.team1072.robot.commands.PollInputCommand;
 import org.usfirst.frc.team1072.robot.commands.StopCommand;
 import org.usfirst.frc.team1072.robot.commands.TurnCommand;
 
@@ -53,6 +54,12 @@ public class OI {
 		gamepad = new GamepadWrapper(0);
 		manualDrive = new ManualDriveCommand();
 		manualDrive.start();
+		gamepad.getButtonA().whenPressed(new PollInputCommand(0));
+		gamepad.getButtonB().whenPressed(new PollInputCommand(5));
+		gamepad.getButtonX().whenPressed(new PollInputCommand(6));
+		gamepad.getButtonY().whenPressed(new PollInputCommand(7));
+		gamepad.getButtonBumperLeft().whenPressed(new PollInputCommand(8));
+		gamepad.getButtonBumperRight().whenPressed(new PollInputCommand(9));
 	}
 	
 	public static void initialize() {
