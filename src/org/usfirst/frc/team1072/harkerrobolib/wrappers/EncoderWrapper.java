@@ -46,15 +46,15 @@ public class EncoderWrapper extends Encoder {
     }
 
     public void updateRate() {
-	double curRate = super.getRate();
-        double currTime;
-	if(!Double.isNaN(curRate))
-	    rate += (curRate - rate) / rateScale;
-        currTime = System.currentTimeMillis() / 1000; //Convert to seconds
-        //Kind of hacky piggyback updating the acceleration as a function of the change in rate
-        //versus the time difference between method calls.
-        updateAcceleration(currTime - previousCallTime, curRate, rate);
-        previousCallTime = currTime; //Update timestep
+		double curRate = super.getRate();
+	    double currTime;
+		if(!Double.isNaN(curRate))
+		    rate += (curRate - rate) / rateScale;
+	        currTime = System.currentTimeMillis() / 1000; //Convert to seconds
+	        //Kind of hacky piggyback updating the acceleration as a function of the change in rate
+	        //versus the time difference between method calls.
+	        updateAcceleration(currTime - previousCallTime, curRate, rate);
+	        previousCallTime = currTime; //Update timestep
     }
 
     /**
@@ -63,7 +63,7 @@ public class EncoderWrapper extends Encoder {
      * @param oldRate The previous rate of the encoder.
      * @param newRate The current rate of the encoder.
      */
-    public void updateAcceleration(double timeStep, double oldRate, double newRate) {
+    private void updateAcceleration(double timeStep, double oldRate, double newRate) {
         acceleration = (newRate - oldRate) / timeStep;
     }
 }

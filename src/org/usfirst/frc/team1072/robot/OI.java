@@ -1,14 +1,10 @@
 package org.usfirst.frc.team1072.robot;
 
 import org.usfirst.frc.team1072.harkerrobolib.wrappers.GamepadWrapper;
-import org.usfirst.frc.team1072.robot.commands.DriveForwardCommand;
-import org.usfirst.frc.team1072.robot.commands.DriveReverseCommand;
-import org.usfirst.frc.team1072.robot.commands.DriveTalonCommand;
 import org.usfirst.frc.team1072.robot.commands.ManualDriveCommand;
-import org.usfirst.frc.team1072.robot.commands.PollInputCommand;
-import org.usfirst.frc.team1072.robot.commands.StopCommand;
-import org.usfirst.frc.team1072.robot.commands.TurnCommand;
+import org.usfirst.frc.team1072.robot.commands.UpdateEncodersCommand;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -48,22 +44,20 @@ public class OI {
     // button.whenReleased(new ExampleCommand());
 	
 	public static GamepadWrapper gamepad;
+	public static Joystick joystick;
 	public ManualDriveCommand manualDrive;
+	public UpdateEncodersCommand updateEncoders;
 	
 	private OI() {
 		gamepad = new GamepadWrapper(0);
+		joystick = new Joystick(1);
 		manualDrive = new ManualDriveCommand();
 		manualDrive.start();
-		gamepad.getButtonA().whenPressed(new PollInputCommand(0));
-		gamepad.getButtonB().whenPressed(new PollInputCommand(5));
-		gamepad.getButtonX().whenPressed(new PollInputCommand(6));
-		gamepad.getButtonY().whenPressed(new PollInputCommand(7));
-		gamepad.getButtonBumperLeft().whenPressed(new PollInputCommand(8));
-		gamepad.getButtonBumperRight().whenPressed(new PollInputCommand(9));
+		updateEncoders = new UpdateEncodersCommand();
+		updateEncoders.start();
 	}
 	
 	public static void initialize() {
-		if (oi == null)
 			oi = new OI();
 	}
 }

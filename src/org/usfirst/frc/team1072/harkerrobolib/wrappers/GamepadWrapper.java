@@ -67,7 +67,7 @@ public class GamepadWrapper extends Joystick {
     }
 
     public double getLeftY() {
-    	return -getRawAxis(AXIS_LEFT_Y); //by default, forward returns a negative number, which is unintuitive
+    	return getRawAxis(AXIS_LEFT_Y); //by default, forward returns a negative number, which is unintuitive
     }
 
     public double getRightX() {
@@ -75,7 +75,7 @@ public class GamepadWrapper extends Joystick {
     }
 
     public double getRightY() {
-	return -getRawAxis(AXIS_RIGHT_Y); //by default, forward returns a negative number, which is unintuitive
+	return getRawAxis(AXIS_RIGHT_Y); //by default, forward returns a negative number, which is unintuitive
     }
     
     /**
