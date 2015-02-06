@@ -59,6 +59,7 @@ public class Robot extends IterativeRobot {
         // this line or comment it out.
     	OI.initialize();
         if (autonomousCommand != null) autonomousCommand.cancel();
+        Drivetrain.getInstance().setRelative(false);
     }
 
     /**

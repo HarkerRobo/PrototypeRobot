@@ -27,32 +27,32 @@ public class Drivetrain extends PIDSubsystem {
 	private EncoderWrapper encRightBack;
 	private Gyro gyroYaw;
 	private Gyro gyroPitch;
+	private boolean isRelative;
 	private static final double DEADZONE_X = 0.15;
 	private static final double DEADZONE_Y = 0.15;
 	private static final double DEADZONE_R = 0.2;
 	private static final double ROTATION_SCALE = 0.5;
 	private static final double SMOOTH = .1;
 	
-	private double prevX, prevY, prevR;
+	private double vX, vY, vR;
 	private final int LEFT_FRONT_TALON = 3;
 	private final int LEFT_BACK_TALON = 2;
 	private final int RIGHT_FRONT_TALON = 0;
 	private final int RIGHT_BACK_TALON = 1;
+	private final int GYRO_PORT = 0;
 	
 	private Drivetrain() {
 		super("Drivetrain", 1, 2, 3, 0);
+		
 		leftFront = new TalonWrapper(LEFT_FRONT_TALON, true);
 		leftBack = new TalonWrapper(LEFT_BACK_TALON, true);
 		rightFront = new TalonWrapper(RIGHT_FRONT_TALON);
-		rightBack = new TalonWrapper(RIGHT_BACK_TALON); 
+		rightBack = new TalonWrapper(RIGHT_BACK_TALON);
+		
 		encLeftBack = new EncoderWrapper(0, 1);
 		encLeftFront = new EncoderWrapper(2, 3);
 		encRightFront = new EncoderWrapper(4, 5);
 		encRightBack = new EncoderWrapper(6, 7);
-		SmartDashboard.putData("Left Back Encoder", encLeftBack);
-		SmartDashboard.putData("Left Front Encoder", encLeftFront);
-		SmartDashboard.putData("Right Back Encoder", encRightBack);
-		SmartDashboard.putData("Right Front Encoder", encRightFront);
 		
 		robotDrive = new RobotDrive(leftFront, leftBack, rightFront, rightBack);
 		robotDrive.setInvertedMotor(RobotDrive.MotorType.kFrontRight, false);
@@ -60,9 +60,17 @@ public class Drivetrain extends PIDSubsystem {
 		robotDrive.setInvertedMotor(RobotDrive.MotorType.kRearRight, false);
 		robotDrive.setInvertedMotor(RobotDrive.MotorType.kRearLeft, true);
 		robotDrive.setSafetyEnabled(false);
-//		gyroYaw = new Gyro(0);
-//		gyroYaw.reset();
-		prevX = prevY = prevR = 0;
+		
+		gyroYaw = new Gyro(GYRO_PORT);
+		
+		SmartDashboard.putData("Left Back Encoder", encLeftBack);
+		SmartDashboard.putData("Left Front Encoder", encLeftFront);
+		SmartDashboard.putData("Right Back Encoder", encRightBack);
+		SmartDashboard.putData("Right Front Encoder", encRightFront);
+		
+		vX = vY = vR = 0;
+		
+		isRelative = false;
 	}
 	
 	public static Drivetrain getInstance() {
@@ -88,33 +96,32 @@ public class Drivetrain extends PIDSubsystem {
     	robotDrive.tankDrive(-left, -right);
     }
     
-    public void drive(double x, double y, double rot) {
+    public void updateDrive(double x, double y, double rot) {
 
         double xIn = (Math.abs(x) < DEADZONE_X) ? 0 : x;
         double yIn = (Math.abs(y) < DEADZONE_Y) ? 0 : y;
         double rotation = (Math.abs(rot) < DEADZONE_R) ? 0 : rot * ROTATION_SCALE;
         
-        if (xIn > prevX + SMOOTH) {
-        	xIn = prevX + SMOOTH;
-        } else if (xIn < prevX - SMOOTH) {
-        	xIn = prevX - SMOOTH;
+        if (xIn > vX + SMOOTH) {
+        	xIn = vX + SMOOTH;
+        } else if (xIn < vX - SMOOTH) {
+        	xIn = vX - SMOOTH;
         }
-        if (yIn > prevY + SMOOTH) {
-        	yIn = prevY + SMOOTH;
-        } else if (yIn < prevY - SMOOTH) {
-        	yIn = prevY - SMOOTH;
+        if (yIn > vY + SMOOTH) {
+        	yIn = vY + SMOOTH;
+        } else if (yIn < vY - SMOOTH) {
+        	yIn = vY - SMOOTH;
         }
-        if (rotation > prevR + SMOOTH) {
-        	rotation = prevR + SMOOTH;
-        } else if (rotation < prevR - SMOOTH) {
-        	rotation = prevR - SMOOTH;
+        if (rotation > vR + SMOOTH) {
+        	rotation = vR + SMOOTH;
+        } else if (rotation < vR - SMOOTH) {
+        	rotation = vR - SMOOTH;
         }
-
-        robotDrive.mecanumDrive_Cartesian(xIn, yIn, rotation, 0);
         
-        prevX = xIn;
-        prevY = yIn;
-        prevR = rotation;
+        setSetpoint(rotation);
+        
+        vX = xIn;
+        vY = yIn;
         
         // Compenstate for gyro angle. !!!NOTE:!!! use mecanuDrive_Polar for this
 //        double rotated[] = rotateVector(xIn, yIn, 0);
@@ -135,22 +142,22 @@ public class Drivetrain extends PIDSubsystem {
 //        rightBack.set(wheelSpeeds[RIGHT_BACK_TALON]);
     }
     
-    private void normalize(double[] speeds)
+    public void drive(double rot)
     {
-    	for (int i = 0; i < speeds.length; i++)
-    	{
-    		if (speeds[i] > 1) speeds[i] = 1;
-    		else if (speeds[i] < -1) speeds[i] = -1;
-    	}
+    	if (isRelative)
+    		robotDrive.mecanumDrive_Cartesian(vX, vY, rot, getCurrentHeading());
+    	else
+    		robotDrive.mecanumDrive_Cartesian(vX, vY, rot, 0);
     }
     
-    private static double[] rotateVector(double x, double y, double angle) {
-        double cosA = Math.cos(angle * (3.14159 / 180.0));
-        double sinA = Math.sin(angle * (3.14159 / 180.0));
-        double out[] = new double[2];
-        out[0] = x * cosA - y * sinA;
-        out[1] = x * sinA + y * cosA;
-        return out;
+    public void setRelative(boolean flag)
+    {
+    	isRelative = flag;
+    }
+    
+    public void toggleRelative()
+    {
+    	isRelative = ! isRelative;
     }
     
     public double getCurrentHeading() {
@@ -163,14 +170,12 @@ public class Drivetrain extends PIDSubsystem {
 
 	@Override
 	protected double returnPIDInput() {
-		// TODO Auto-generated method stub
-		return 0;
+		return getCurrentHeading();
 	}
 
 	@Override
-	protected void usePIDOutput(double arg0) {
-		// TODO Auto-generated method stub
-		
+	protected void usePIDOutput(double output) {
+		drive(output);
 	}
 	
 	public void updateEncoders() {

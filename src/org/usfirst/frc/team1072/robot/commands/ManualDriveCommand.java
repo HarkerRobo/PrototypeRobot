@@ -23,7 +23,7 @@ public class ManualDriveCommand extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() 
     {
-    	Drivetrain.getInstance().drive(OI.gamepad.getLeftX(), OI.gamepad.getLeftY(), OI.gamepad.getRightX());
+    	Drivetrain.getInstance().updateDrive(OI.gamepad.getLeftX(), OI.gamepad.getLeftY(), OI.gamepad.getRightX());
     }
 
     // Make this return true when this Command no longer needs to run execute()
