@@ -1,10 +1,10 @@
 package org.usfirst.frc.team1072.robot;
 
 import org.usfirst.frc.team1072.harkerrobolib.wrappers.GamepadWrapper;
+import org.usfirst.frc.team1072.robot.commands.DriveTalonCommand;
 import org.usfirst.frc.team1072.robot.commands.ManualDriveCommand;
 import org.usfirst.frc.team1072.robot.commands.UpdateEncodersCommand;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,13 +18,11 @@ public class OI {
 	private static OI oi;
 	
 	public static GamepadWrapper gamepad;
-	public static Joystick joystick;
 	public ManualDriveCommand manualDrive;
 	public UpdateEncodersCommand updateEncoders;
 	
 	private OI() {
 		gamepad = new GamepadWrapper(0);
-		joystick = new Joystick(1);
 		manualDrive = new ManualDriveCommand();
 		manualDrive.start();
 		updateEncoders = new UpdateEncodersCommand();
@@ -32,6 +30,7 @@ public class OI {
 	}
 	
 	public static void initialize() {
+		if (oi == null)
 			oi = new OI();
 	}
 }

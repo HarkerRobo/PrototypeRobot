@@ -3,7 +3,6 @@ package org.usfirst.frc.team1072.robot.commands;
 import org.usfirst.frc.team1072.robot.OI;
 import org.usfirst.frc.team1072.robot.subsystems.Drivetrain;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -23,7 +22,7 @@ public class ManualDriveCommand extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() 
     {
-    	Drivetrain.getInstance().updateDrive(OI.gamepad.getLeftX(), OI.gamepad.getLeftY(), OI.gamepad.getRightX());
+    	Drivetrain.getInstance().drive(OI.gamepad.getLeftX(), OI.gamepad.getLeftY(), OI.gamepad.getRightX());
     }
 
     // Make this return true when this Command no longer needs to run execute()

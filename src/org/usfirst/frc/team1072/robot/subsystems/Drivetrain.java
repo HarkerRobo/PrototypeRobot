@@ -6,6 +6,7 @@ import org.usfirst.frc.team1072.robot.Robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Gyro;
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Talon;
@@ -16,7 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  *
  */
-public class Drivetrain extends PIDSubsystem {
+public class Drivetrain extends Subsystem {
     
 	private RobotDrive robotDrive;
 	private static Drivetrain drivetrain;
@@ -25,8 +26,7 @@ public class Drivetrain extends PIDSubsystem {
 	private EncoderWrapper encLeftBack;
 	private EncoderWrapper encRightFront;
 	private EncoderWrapper encRightBack;
-	private Gyro gyroYaw;
-	private Gyro gyroPitch;
+	private I2C gyro;
 	private boolean isRelative;
 	private static final double DEADZONE_X = 0.15;
 	private static final double DEADZONE_Y = 0.15;
@@ -34,16 +34,15 @@ public class Drivetrain extends PIDSubsystem {
 	private static final double ROTATION_SCALE = 0.5;
 	private static final double SMOOTH = .1;
 	
-	private double vX, vY, vR;
+	private double prevX, prevY, prevR;
+	private double prevAngle;
 	private final int LEFT_FRONT_TALON = 3;
 	private final int LEFT_BACK_TALON = 2;
 	private final int RIGHT_FRONT_TALON = 0;
 	private final int RIGHT_BACK_TALON = 1;
-	private final int GYRO_PORT = 0;
+	private final int GYRO_ADDRESS = 0x69;
 	
-	private Drivetrain() {
-		super("Drivetrain", 1, 2, 3, 0);
-		
+	private Drivetrain() {		
 		leftFront = new TalonWrapper(LEFT_FRONT_TALON, true);
 		leftBack = new TalonWrapper(LEFT_BACK_TALON, true);
 		rightFront = new TalonWrapper(RIGHT_FRONT_TALON);
@@ -61,14 +60,15 @@ public class Drivetrain extends PIDSubsystem {
 		robotDrive.setInvertedMotor(RobotDrive.MotorType.kRearLeft, true);
 		robotDrive.setSafetyEnabled(false);
 		
-		gyroYaw = new Gyro(GYRO_PORT);
+		gyro = new I2C(I2C.Port.kOnboard, GYRO_ADDRESS);
+		prevAngle = 0;
 		
 		SmartDashboard.putData("Left Back Encoder", encLeftBack);
 		SmartDashboard.putData("Left Front Encoder", encLeftFront);
 		SmartDashboard.putData("Right Back Encoder", encRightBack);
 		SmartDashboard.putData("Right Front Encoder", encRightFront);
 		
-		vX = vY = vR = 0;
+		//vX = vY = vR = 0;
 		
 		isRelative = false;
 	}
@@ -96,32 +96,42 @@ public class Drivetrain extends PIDSubsystem {
     	robotDrive.tankDrive(-left, -right);
     }
     
-    public void updateDrive(double x, double y, double rot) {
+    public void drive(double x, double y, double rot) {
 
         double xIn = (Math.abs(x) < DEADZONE_X) ? 0 : x;
         double yIn = (Math.abs(y) < DEADZONE_Y) ? 0 : y;
         double rotation = (Math.abs(rot) < DEADZONE_R) ? 0 : rot * ROTATION_SCALE;
         
-        if (xIn > vX + SMOOTH) {
-        	xIn = vX + SMOOTH;
-        } else if (xIn < vX - SMOOTH) {
-        	xIn = vX - SMOOTH;
+        if (xIn > prevX + SMOOTH) {
+        	xIn = prevX + SMOOTH;
+        } else if (xIn < prevX - SMOOTH) {
+        	xIn = prevX - SMOOTH;
         }
-        if (yIn > vY + SMOOTH) {
-        	yIn = vY + SMOOTH;
-        } else if (yIn < vY - SMOOTH) {
-        	yIn = vY - SMOOTH;
+        if (yIn > prevY + SMOOTH) {
+        	yIn = prevY + SMOOTH;
+        } else if (yIn < prevY - SMOOTH) {
+        	yIn = prevY - SMOOTH;
         }
-        if (rotation > vR + SMOOTH) {
-        	rotation = vR + SMOOTH;
-        } else if (rotation < vR - SMOOTH) {
-        	rotation = vR - SMOOTH;
+        if (rotation > prevR + SMOOTH) {
+        	rotation = prevR + SMOOTH;
+        } else if (rotation < prevR - SMOOTH) {
+        	rotation = prevR - SMOOTH;
         }
         
-        setSetpoint(rotation);
+        prevX = xIn;
+		prevY = yIn;
+		prevR = rotation;
         
-        vX = xIn;
-        vY = yIn;
+        if (rotation == 0) {
+        	rotation -= (getCurrentHeading() - prevAngle);
+        }
+        
+        if (isRelative)
+        	robotDrive.mecanumDrive_Cartesian(xIn, yIn, rotation, getCurrentHeading());
+        else
+        	robotDrive.mecanumDrive_Cartesian(xIn, yIn, rotation, 0);
+		
+		prevAngle = getCurrentHeading();
         
         // Compenstate for gyro angle. !!!NOTE:!!! use mecanuDrive_Polar for this
 //        double rotated[] = rotateVector(xIn, yIn, 0);
@@ -142,14 +152,6 @@ public class Drivetrain extends PIDSubsystem {
 //        rightBack.set(wheelSpeeds[RIGHT_BACK_TALON]);
     }
     
-    public void drive(double rot)
-    {
-    	if (isRelative)
-    		robotDrive.mecanumDrive_Cartesian(vX, vY, rot, getCurrentHeading());
-    	else
-    		robotDrive.mecanumDrive_Cartesian(vX, vY, rot, 0);
-    }
-    
     public void setRelative(boolean flag)
     {
     	isRelative = flag;
@@ -161,28 +163,22 @@ public class Drivetrain extends PIDSubsystem {
     }
     
     public double getCurrentHeading() {
-    	return gyroYaw.getAngle();
+    	System.out.println(gyro.addressOnly());
+    	return 0;
+    	//resetGyro();
+    	//return gyro.getAngle();
     }
     
     public void resetGyro() {
-    	gyroYaw.reset();
+    	//gyro.reset();
     }
-
-	@Override
-	protected double returnPIDInput() {
-		return getCurrentHeading();
-	}
-
-	@Override
-	protected void usePIDOutput(double output) {
-		drive(output);
-	}
 	
 	public void updateEncoders() {
 		System.out.println("LB:" + encLeftBack.get());
 		System.out.println("LF:" + encLeftFront.get());
 		System.out.println("RB:" + encRightBack.get());
 		System.out.println("RF:" + encRightFront.get());
+		System.out.println("G0:" + getCurrentHeading());
 		encLeftBack.updateRate();
 		encLeftFront.updateRate();
 		encRightBack.updateRate();
