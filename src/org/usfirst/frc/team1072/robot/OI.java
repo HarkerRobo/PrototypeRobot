@@ -25,12 +25,12 @@ public class OI {
 		gamepad = new GamepadWrapper(0);
 		manualDrive = new ManualDriveCommand();
 		manualDrive.start();
-		updateEncoders = new UpdateEncodersCommand();
-		updateEncoders.start();
+//		updateEncoders = new UpdateEncodersCommand();
+//		updateEncoders.start();
 	}
 	
 	public static void initialize() {
-		if (oi == null)
+//		if (oi == null)
 			oi = new OI();
 	}
 }

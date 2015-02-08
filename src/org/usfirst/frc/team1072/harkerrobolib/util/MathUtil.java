@@ -8,6 +8,15 @@ package org.usfirst.frc.team1072.harkerrobolib.util;
  * @author Ben H.
  */
 public class MathUtil {
+	
+	public static int binToDec(String binary) {
+		int dec = 0;
+		for (int i=0; i<binary.length(); i++) {
+			char cur = binary.charAt(binary.length()-1-i);
+			dec += cur * Math.pow(2, i);
+		}
+		return dec;
+	}
 
     //answers are in radians
     public static double aTan(double x) {

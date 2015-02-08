@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1072.robot.subsystems;
 
+import org.usfirst.frc.team1072.harkerrobolib.util.MathUtil;
 import org.usfirst.frc.team1072.harkerrobolib.wrappers.EncoderWrapper;
 import org.usfirst.frc.team1072.harkerrobolib.wrappers.TalonWrapper;
 import org.usfirst.frc.team1072.robot.Robot;
@@ -27,6 +28,7 @@ public class Drivetrain extends Subsystem {
 	private EncoderWrapper encRightFront;
 	private EncoderWrapper encRightBack;
 	private I2C gyro;
+	private Gyro gyroTest;
 	private boolean isRelative;
 	private static final double DEADZONE_X = 0.15;
 	private static final double DEADZONE_Y = 0.15;
@@ -40,7 +42,10 @@ public class Drivetrain extends Subsystem {
 	private final int LEFT_BACK_TALON = 2;
 	private final int RIGHT_FRONT_TALON = 0;
 	private final int RIGHT_BACK_TALON = 1;
-	private final int GYRO_ADDRESS = 0x69;
+	private final int GYRO_ADDRESS = 0x68;
+	
+	private int count = 0;
+	private double superMan = 0;
 	
 	private Drivetrain() {		
 		leftFront = new TalonWrapper(LEFT_FRONT_TALON, true);
@@ -60,7 +65,15 @@ public class Drivetrain extends Subsystem {
 		robotDrive.setInvertedMotor(RobotDrive.MotorType.kRearLeft, true);
 		robotDrive.setSafetyEnabled(false);
 		
-		gyro = new I2C(I2C.Port.kOnboard, GYRO_ADDRESS);
+		gyroTest = new Gyro(0);
+		gyroTest.reset();
+		
+		gyro = new I2C(I2C.Port.kMXP, GYRO_ADDRESS);
+		//Resets the gyro
+		System.out.println(MathUtil.binToDec("10000000"));
+		System.out.println(gyro.write(0x3e, MathUtil.binToDec("10000000"))); //128
+		gyro.write(0x16, 26);
+		gyro.write(0x17, 80);
 		prevAngle = 0;
 		
 		SmartDashboard.putData("Left Back Encoder", encLeftBack);
@@ -122,16 +135,16 @@ public class Drivetrain extends Subsystem {
 		prevY = yIn;
 		prevR = rotation;
         
-        if (rotation == 0) {
-        	rotation -= (getCurrentHeading() - prevAngle);
-        }
+//        if (rotation == 0) {
+//        	rotation -= (getCurrentHeading() - prevAngle);
+//        } else {
+//            prevAngle = getCurrentHeading();
+//        }
         
         if (isRelative)
         	robotDrive.mecanumDrive_Cartesian(xIn, yIn, rotation, getCurrentHeading());
         else
         	robotDrive.mecanumDrive_Cartesian(xIn, yIn, rotation, 0);
-		
-		prevAngle = getCurrentHeading();
         
         // Compenstate for gyro angle. !!!NOTE:!!! use mecanuDrive_Polar for this
 //        double rotated[] = rotateVector(xIn, yIn, 0);
@@ -163,22 +176,38 @@ public class Drivetrain extends Subsystem {
     }
     
     public double getCurrentHeading() {
-    	System.out.println(gyro.addressOnly());
-    	return 0;
+    	if (count > 10) {
+    		System.out.println("GYRO:\t" + superMan / count);
+    		count = 0;
+    		superMan = 0;
+    	}
+    	count++;
+    	superMan += gyroTest.getAngle();
+    	
+    	//System.out.println(gyro.addressOnly());
+//    	byte[] array = new byte[1];
+//    	gyro.read(30, 1, array);
+//    	System.out.println(array[0]);
+//    	System.out.println(array[0] | ((int)array[1]) << 8);
+//    	for (int i = 0; i < array.length; i++) {
+//    		System.out.println(i+": "+array[i]);
+//    	}
+    	return gyroTest.getAngle();
     	//resetGyro();
     	//return gyro.getAngle();
     }
     
     public void resetGyro() {
     	//gyro.reset();
-    }
+    } 
 	
 	public void updateEncoders() {
-		System.out.println("LB:" + encLeftBack.get());
-		System.out.println("LF:" + encLeftFront.get());
-		System.out.println("RB:" + encRightBack.get());
-		System.out.println("RF:" + encRightFront.get());
-		System.out.println("G0:" + getCurrentHeading());
+//		System.out.println("LB:" + encLeftBack.get());
+//		System.out.println("LF:" + encLeftFront.get());
+//		System.out.println("RB:" + encRightBack.get());
+//		System.out.println("RF:" + encRightFront.get());
+//		System.out.println("G0:" + getCurrentHeading());
+		getCurrentHeading();
 		encLeftBack.updateRate();
 		encLeftFront.updateRate();
 		encRightBack.updateRate();
